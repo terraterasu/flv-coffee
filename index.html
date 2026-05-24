@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLV COFFEE MEDIA — Specialty, Simplified.</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Space+Grotesk:wght@300;400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Serif JP', serif;
+    background: #fff;
+    color: #111;
+    line-height: 1.8;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ヘッダー */
+  header {
+    border-bottom: 0.5px solid #000;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 4px;
+  }
+
+  .logo span {
+    font-weight: 300;
+    font-size: 11px;
+    letter-spacing: 3px;
+    display: block;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  nav {
+    display: flex;
+    gap: 32px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #555;
+  }
+
+  nav a:hover { color: #000; }
+
+  /* ヒーロー */
+  .hero {
+    padding: 80px 40px 60px;
+    border-bottom: 0.5px solid #eee;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .hero-tag {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #888;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 {
+    font-size: 42px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+  }
+
+  .hero p {
+    font-size: 15px;
+    color: #555;
+    max-width: 600px;
+    line-height: 2;
+  }
+
+  /* 記事グリッド */
+  .articles {
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 0 40px;
+  }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #888;
+    margin-bottom: 40px;
+    padding-bottom: 12px;
+    border-bottom: 0.5px solid #000;
+  }
+
+  .article-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 48px;
+  }
+
+  .article-card {
+    border-bottom: 0.5px solid #eee;
+    padding-bottom: 32px;
+  }
+
+  .article-card:hover .article-title { color: #555; }
+
+  .article-tag {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #888;
+    margin-bottom: 10px;
+  }
+
+  .article-title {
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    transition: color 0.2s;
+  }
+
+  .article-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.9;
+    margin-bottom: 16px;
+  }
+
+  .article-date {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #bbb;
+  }
+
+  /* FLV COFFEEバナー */
+  .brand-banner {
+    background: #000;
+    color: #fff;
+    padding: 60px 40px;
+    text-align: center;
+    margin: 60px 0 0;
+  }
+
+  .brand-banner .brand-tag {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #666;
+    margin-bottom: 16px;
+  }
+
+  .brand-banner h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    margin-bottom: 12px;
+  }
+
+  .brand-banner p {
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+  }
+
+  .btn {
+    display: inline-block;
+    border: 0.5px solid #fff;
+    color: #fff;
+    padding: 12px 40px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .btn:hover {
+    background: #fff;
+    color: #000;
+  }
+
+  /* フッター */
+  footer {
+    border-top: 0.5px solid #eee;
+    padding: 32px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #bbb;
+  }
+
+  @media (max-width: 640px) {
+    header { padding: 16px 20px; flex-direction: column; gap: 16px; }
+    .hero { padding: 48px 20px 40px; }
+    .hero h1 { font-size: 28px; }
+    .articles { padding: 0 20px; margin: 40px auto; }
+    .article-grid { grid-template-columns: 1fr; gap: 32px; }
+    footer { flex-direction: column; gap: 8px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    FLV COFFEE
+    <span>SPECIALTY COFFEE MEDIA</span>
+  </div>
+  <nav>
+    <a href="#">コーヒーを知る</a>
+    <a href="#">焙煎について</a>
+    <a href="#">SHOP</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">SPECIALTY, SIMPLIFIED.</div>
+  <h1>スペシャルティコーヒーを、<br>もっと身近に。</h1>
+  <p>難しいと思われているスペシャルティコーヒーを、分かりやすく伝えるメディアです。産地・精製・フレーバー、知れば知るほどコーヒーが楽しくなります。</p>
+</div>
+
+<div class="articles">
+  <div class="section-title">LATEST ARTICLES</div>
+  <div class="article-grid">
+
+    <div class="article-card">
+      <div class="article-tag">FLAVOR</div>
+      <div class="article-title">アナエロビックとは何か。発酵がコーヒーの味を変える理由</div>
+      <div class="article-desc">密閉タンクで酸素を遮断して発酵させることで、通常では生まれないフレーバーが生成される。ワイン、トロピカルフルーツ、発酵感。プロセスが味をハックする。</div>
+      <div class="article-date">2026.05.25</div>
+    </div>
+
+    <div class="article-card">
+      <div class="article-tag">ORIGIN</div>
+      <div class="article-title">エチオピアがスペシャルティコーヒーの聖地である理由</div>
+      <div class="article-desc">コーヒーの原産地はエチオピア。野生種が今も存在し、品種の多様性が他国と比べて圧倒的に高い。同じイルガチェフェでも農園・精製・標高が違えば、まったく別のフレーバーになる。</div>
+      <div class="article-date">2026.05.20</div>
+    </div>
+
+    <div class="article-card">
+      <div class="article-tag">PROCESS</div>
+      <div class="article-title">ウォッシュドとナチュラル。精製方法がフレーバーを決める</div>
+      <div class="article-desc">ウォッシュドは果肉を除去してから乾燥させる。クリーンで明るい酸味が特徴。ナチュラルは果肉をつけたまま乾燥させる。甘く、フルーティーで複雑なフレーバーが生まれる。</div>
+      <div class="article-date">2026.05.15</div>
+    </div>
+
+    <div class="article-card">
+      <div class="article-tag">ROAST</div>
+      <div class="article-title">焙煎度と酸味・苦味の関係。浅煎りで飲む意味</div>
+      <div class="article-desc">スペシャルティコーヒーは浅〜中煎りで飲む意味がある。豆本来のフレーバーが最も表現されるのがその領域だから。深煎りにするほど個性は失われ、苦味が前に出てくる。</div>
+      <div class="article-date">2026.05.10</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="brand-banner">
+  <div class="brand-tag">ROASTED TO ORDER</div>
+  <h2>FLV COFFEE</h2>
+  <p>Specialty, Simplified. — 東京・町田の自家焙煎</p>
+  <a href="https://flvcoffee.base.shop" class="btn">SHOP →</a>
+</div>
+
+<footer>
+  <div>© 2026 FLV COFFEE</div>
+  <div>Threads / X : @flvcoffee</div>
+</footer>
+
+</body>
+</html>
