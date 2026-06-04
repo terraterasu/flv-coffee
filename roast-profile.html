@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLV COFFEE — 焙煎プロファイル</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Courier New', Courier, monospace; background: #f5f5f5; color: #111; padding: 20px; }
+  h1 { font-size: 18px; letter-spacing: 4px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #000; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .field { background: #fff; border: 0.5px solid #ddd; border-radius: 6px; padding: 10px; }
+  .field label { display: block; font-size: 11px; color: #888; margin-bottom: 4px; }
+  .field input, .field select { width: 100%; font-size: 12px; padding: 4px 6px; border: 0.5px solid #ccc; border-radius: 4px; background: #fff; color: #111; font-family: 'Courier New', monospace; }
+  .table-wrap { overflow-x: auto; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; background: #fff; border: 0.5px solid #ddd; border-radius: 6px; overflow: hidden; }
+  th { padding: 8px 6px; text-align: center; background: #f0f0f0; border-bottom: 0.5px solid #ccc; font-weight: 500; font-size: 11px; }
+  th:first-child { text-align: left; width: 150px; }
+  td { padding: 3px 2px; border-bottom: 0.5px solid #eee; }
+  td input { width: 100%; font-size: 12px; padding: 2px 4px; border: 0.5px solid #eee; border-radius: 3px; background: #fff; color: #111; text-align: center; font-family: 'Courier New', monospace; }
+  td:first-child input { text-align: left; }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+  button { font-size: 12px; padding: 6px 16px; border: 0.5px solid #333; border-radius: 4px; background: #fff; cursor: pointer; font-family: 'Courier New', monospace; }
+  button:hover { background: #f0f0f0; }
+  .btn-danger { color: #c00; border-color: #c00; }
+  .chart-wrap { background: #fff; border: 0.5px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  #loss-rate { font-size: 12px; color: #888; }
+</style>
+</head>
+<body>
+
+<h1>FLV COFFEE — 焙煎プロファイル</h1>
+
+<div class="grid">
+  <div class="field"><label>品名</label><input id="i-name" value="EC_TM_AW"></div>
+  <div class="field"><label>日付</label><input id="i-date" type="date"></div>
+  <div class="field"><label>精製方法</label><input id="i-process" value="Anaerobic Washed"></div>
+  <div class="field"><label>焙煎度</label>
+    <select id="i-roast">
+      <option>ライトロースト</option>
+      <option>シナモンロースト</option>
+      <option selected>ミディアムロースト</option>
+      <option>ハイロースト</option>
+      <option>シティロースト</option>
+      <option>フルシティロースト</option>
+      <option>フレンチロースト</option>
+      <option>イタリアンロースト</option>
+    </select>
+  </div>
+  <div class="field"><label>生豆 (g)</label><input id="i-green" type="number" value="100"></div>
+  <div class="field"><label>焙煎後 (g)</label><input id="i-roasted" type="number" placeholder="例: 87"></div>
+  <div class="field"><label>前予熱 (℃)</label><input id="i-pre" type="number" value="220"></div>
+  <div class="field"><label>予熱 (℃)</label><input id="i-preheat" type="number" value="120"></div>
+  <div class="field"><label>TP (℃)</label><input id="i-tp" type="number" value="80"></div>
+  <div class="field"><label>RoR MAX</label><input id="i-ror" type="number" value="18.9" step="0.1"></div>
+  <div class="field"><label>コメント</label><input id="i-comment" placeholder="メモ"></div>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="text-align:left;">工程</th>
+      <th>温度 (℃)</th>
+      <th>RoR</th>
+      <th>時間</th>
+      <th>火力</th>
+      <th>ファン</th>
+      <th>ドラム</th>
+    </tr>
+  </thead>
+  <tbody id="profile-body"></tbody>
+</table>
+</div>
+
+<div class="btns">
+  <button onclick="addRow()">＋ 行追加</button>
+  <button onclick="updateChart()">グラフ更新</button>
+  <button onclick="exportCSV()">CSV保存</button>
+  <button class="btn-danger" onclick="clearAll()">リセット</button>
+  <span id="loss-rate"></span>
+</div>
+
+<div class="chart-wrap">
+  <canvas id="roastChart" height="260"></canvas>
+</div>
+
+<script>
+const defaultRows = [
+  {name:'投入', temp:120, ror:'-', time:'0:00', heat:50, fan:10, drum:40},
+  {name:'中点', temp:100, ror:'-', time:'0:40', heat:50, fan:10, drum:40},
+  {name:'ドライングフェーズ①', temp:105, ror:6.0, time:'1:30', heat:50, fan:20, drum:60},
+  {name:'ドライングフェーズ②', temp:115, ror:20.0, time:'2:00', heat:80, fan:20, drum:60},
+  {name:'ドライングフェーズ③', temp:135, ror:16.4, time:'3:13', heat:90, fan:30, drum:60},
+  {name:'ドライングフェーズ④', temp:143, ror:15.0, time:'3:45', heat:100, fan:30, drum:80},
+  {name:'ドライングフェーズ⑤', temp:153, ror:13.3, time:'4:30', heat:100, fan:20, drum:80},
+  {name:'メイラードフェーズ①', temp:170, ror:11.3, time:'6:00', heat:100, fan:20, drum:80},
+  {name:'メイラードフェーズ②', temp:180, ror:10.0, time:'7:00', heat:100, fan:10, drum:90},
+  {name:'メイラードフェーズ③', temp:185, ror:9.7, time:'7:31', heat:100, fan:10, drum:90},
+  {name:'メイラードフェーズ④', temp:190, ror:8.8, time:'8:05', heat:100, fan:20, drum:100},
+  {name:'デベロップメントフェーズ', temp:197, ror:7.3, time:'9:10', heat:100, fan:30, drum:100},
+  {name:'排出', temp:201, ror:4.9, time:'9:59', heat:100, fan:30, drum:100},
+];
+
+function ic(val) {
+  return `<td><input value="${val}" onchange="updateChart()"></td>`;
+}
+
+function renderRows(rows) {
+  document.getElementById('profile-body').innerHTML = rows.map(r => `<tr>
+    <td><input value="${r.name}" style="text-align:left;"></td>
+    ${ic(r.temp)}${ic(r.ror)}${ic(r.time)}${ic(r.heat)}${ic(r.fan)}${ic(r.drum)}
+  </tr>`).join('');
+  updateChart();
+  updateLoss();
+}
+
+function addRow() {
+  const tbody = document.getElementById('profile-body');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input value="新工程" style="text-align:left;"></td>${ic('')}${ic('')}${ic('0:00')}${ic('')}${ic('')}${ic('')}`;
+  tbody.appendChild(tr);
+}
+
+function getTableData() {
+  const labels = [], temps = [], rors = [];
+  document.querySelectorAll('#profile-body tr').forEach(tr => {
+    const cells = tr.querySelectorAll('input');
+    if (cells.length < 7) return;
+    labels.push(cells[3].value);
+    temps.push(isNaN(parseFloat(cells[1].value)) ? null : parseFloat(cells[1].value));
+    rors.push(isNaN(parseFloat(cells[2].value)) ? null : parseFloat(cells[2].value));
+  });
+  return {labels, temps, rors};
+}
+
+let chart = null;
+function updateChart() {
+  const {labels, temps, rors} = getTableData();
+  if (!chart) {
+    chart = new Chart(document.getElementById('roastChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {label:'温度帯 (℃)', data:temps, borderColor:'#378ADD', backgroundColor:'transparent', yAxisID:'y', tension:0.3, pointRadius:3, borderWidth:2},
+          {label:'RoR', data:rors, borderColor:'#D85A30', backgroundColor:'transparent', yAxisID:'y2', tension:0.3, pointRadius:3, borderWidth:2},
+        ]
+      },
+      options: {
+        responsive:true,
+        interaction:{mode:'index', intersect:false},
+        plugins:{legend:{labels:{font:{size:12}, boxWidth:20}}},
+        scales:{
+          x:{ticks:{font:{size:11}}, grid:{color:'rgba(0,0,0,0.08)'}},
+          y:{position:'left', title:{display:true, text:'温度 (℃)', font:{size:11}}, ticks:{font:{size:11}}, grid:{color:'rgba(0,0,0,0.08)'}},
+          y2:{position:'right', title:{display:true, text:'RoR', font:{size:11}}, ticks:{font:{size:11}}, grid:{display:false}},
+        }
+      }
+    });
+  } else {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = temps;
+    chart.data.datasets[1].data = rors;
+    chart.update();
+  }
+}
+
+function updateLoss() {
+  const g = parseFloat(document.getElementById('i-green').value)||0;
+  const r = parseFloat(document.getElementById('i-roasted').value)||0;
+  document.getElementById('loss-rate').textContent = (g && r) ? `減少率: ${((g-r)/g*100).toFixed(1)}%（${g}g → ${r}g）` : '';
+}
+
+function getRows() {
+  return Array.from(document.querySelectorAll('#profile-body tr')).map(tr =>
+    Array.from(tr.querySelectorAll('input')).map(c => c.value));
+}
+
+function exportCSV() {
+  const n = id => document.getElementById(id).value;
+  let csv = `品名,${n('i-name')},日付,${n('i-date')}\n精製方法,${n('i-process')},焙煎度,${n('i-roast')}\n`;
+  csv += `前予熱,${n('i-pre')},予熱,${n('i-preheat')},TP,${n('i-tp')},RoR MAX,${n('i-ror')}\n`;
+  csv += `生豆,${n('i-green')}g,焙煎後,${n('i-roasted')}g,コメント,${n('i-comment')}\n\n`;
+  csv += `工程,温度(℃),RoR,時間,火力,ファン,ドラム\n`;
+  getRows().forEach(r => csv += r.join(',') + '\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv'})),
+    download: `roast_${n('i-name')}_${n('i-date')||'profile'}.csv`
+  });
+  a.click();
+}
+
+function clearAll() { if(confirm('リセットしますか？')) renderRows(defaultRows); }
+
+document.getElementById('i-date').value = new Date().toISOString().split('T')[0];
+document.getElementById('i-green').addEventListener('input', updateLoss);
+document.getElementById('i-roasted').addEventListener('input', updateLoss);
+renderRows(defaultRows);
+</script>
+</body>
+</html>
